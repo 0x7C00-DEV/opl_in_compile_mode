@@ -1,0 +1,17 @@
+def main() {
+	let x: int = str2int(input("> "));
+	switch (x) {
+		case 1: {
+			println("your input is 1");
+			break;
+		}
+		case 2: {
+			println("your input is 2");
+			break;
+		}
+		default: {
+			println("?");
+			break;
+		}
+	}
+}

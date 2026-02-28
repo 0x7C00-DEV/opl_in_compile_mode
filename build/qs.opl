@@ -1,0 +1,39 @@
+def swap(arr: [int], i: int, j: int) {
+    let temp: int = arr[i];
+    arr[i] = arr[j];
+    arr[j] = temp;
+}
+
+def partition(arr: [int], left: int, right: int) {
+    let pivot: int = arr[right];
+    let i: int = left - 1;
+    let j: int = left;
+    while (j < right) {
+        if (arr[j] < pivot) {
+            i = i + 1;
+            swap(arr, i, j);
+        }
+        j = j + 1;
+    }
+    swap(arr, i + 1, right);
+    return i + 1;
+}
+
+def quickSort(arr: [int], left: int, right: int) {
+    if (left < right) {
+        let pivotIndex: int = partition(arr, left, right);
+        quickSort(arr, left, pivotIndex - 1);
+        quickSort(arr, pivotIndex + 1, right);
+    }
+}
+
+def main() {
+    let arr: [int] = [5, 2, 9, 1, 5, 6];
+    let len: int = arr.size();
+    quickSort(arr, 0, len - 1);
+    let i: int = 0;
+    while (i < len) {
+        println(arr[i]);
+        i = i + 1;
+    }
+}
