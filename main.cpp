@@ -77,10 +77,6 @@ void compile(std::string __in__, std::string __out__) {
 	save_code(__out__, &op);
 }
 
-void import_test() {
-
-}
-
 int main(int argc, char **argv) {
     return release(argc, argv);
 }

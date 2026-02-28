@@ -12,12 +12,17 @@
 # =============================================================================
 
 #############################################
+# localized /showIncludes string
+
+msvc_deps_prefix = 注意: 包含文件:  
+
+
+#############################################
 # Rule for compiling CXX files.
 
 rule CXX_COMPILER__COPL_Debug
-  depfile = $DEP_FILE
-  deps = gcc
-  command = "D:\Program files\JetBrains\CLion 2023.1.7\bin\mingw\bin\g++.exe" $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  deps = msvc
+  command = "D:\Program files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\bin\Hostx86\x86\cl.exe"  /nologo /TP $DEFINES $INCLUDES $FLAGS /showIncludes /Fo$out /Fd$TARGET_COMPILE_PDB /FS -c $in
   description = Building CXX object $out
 
 
@@ -25,7 +30,7 @@ rule CXX_COMPILER__COPL_Debug
 # Rule for linking CXX executable.
 
 rule CXX_EXECUTABLE_LINKER__COPL_Debug
-  command = cmd.exe /C "$PRE_LINK && "D:\Program files\JetBrains\CLion 2023.1.7\bin\mingw\bin\g++.exe" $FLAGS $LINK_FLAGS $in -o $TARGET_FILE -Wl,--out-implib,$TARGET_IMPLIB -Wl,--major-image-version,0,--minor-image-version,0 $LINK_PATH $LINK_LIBRARIES && $POST_BUILD"
+  command = cmd.exe /C "$PRE_LINK && "D:\Program files\JetBrains\CLion 2023.1.7\bin\cmake\win\x64\bin\cmake.exe" -E vs_link_exe --intdir=$OBJECT_DIR --rc="D:\Windows Kits\10\bin\10.0.26100.0\x86\rc.exe" --mt="D:\Windows Kits\10\bin\10.0.26100.0\x86\mt.exe" --manifests $MANIFESTS -- "D:\Program files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\bin\Hostx86\x86\link.exe" /nologo $in  /out:$TARGET_FILE /implib:$TARGET_IMPLIB /pdb:$TARGET_PDB /version:0.0 $LINK_FLAGS $LINK_PATH $LINK_LIBRARIES && $POST_BUILD"
   description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
 

@@ -13,7 +13,7 @@ public:
         A_FOR, A_CLASS, A_RETURN, A_BREAK, A_CONTINUE, A_BIN_OP, A_BIT_NOT,
         A_MEMBER_ACCESS, A_ID, A_ELEMENT_GET, A_CALL, A_NOT, A_ARRAY, A_SELF_INC,
         A_SELF_DEC, A_VAR_DEF, A_FUNC_DEFINE, A_SELF_OPERA, A_MEM_MALLOC, A_LAMBDA,
-        A_NULL, A_IMPORT, A_TYPE
+        A_NULL, A_IMPORT, A_TYPE, A_SW_UNIT, A_SW
     } kind;
 
     AST(AKind kind) { this->kind = kind; }
@@ -142,11 +142,8 @@ public:
     IntegerNode(std::string number) : AST(AST::A_INT) {
         this->number = number;
     }
-
-    ~IntegerNode() {
-        delete &number;
-    }
 };
+
 
 class BitNotNode : public AST {
 public:
@@ -383,6 +380,35 @@ public:
     ContinueNode() : AST(A_CONTINUE) {}
 };
 
+class SwitchUnit : public AST {
+public:
+    AST* value;
+    Block* stmt;
+    bool is_default = false;
+    SwitchUnit(AST* value, Block* stmt) : AST(A_SW_UNIT) {
+        this->value = value;
+        this->stmt = stmt;
+        is_default = false;
+    }
+
+    SwitchUnit(Block* stmt) : AST(A_SW_UNIT) {
+        this->value = nullptr;
+        this->stmt = stmt;
+        is_default = true;
+    }
+};
+
+class SwitchNode : public AST {
+public:
+    std::vector<SwitchUnit*> units;
+    AST* target_value;
+    SwitchNode(AST* target_value, std::vector<SwitchUnit*> units) : AST(A_SW) {
+        this->units = units;
+        this->target_value = target_value;
+    }
+};
+
+
 class BreakNode : public AST {
 public:
     BreakNode() : AST(A_BREAK) {}
@@ -465,8 +491,6 @@ void make_error(std::string error_type, std::string error_info) {
     std::cout << error_type << ": " << error_info << " at EOF" << std::endl;
     exit(-1);
 }
-
-
 
 std::string print_indent(int indent, std::string inde = "    ") {
     std::string res;

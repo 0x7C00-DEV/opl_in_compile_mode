@@ -35,7 +35,7 @@ struct Token {
 
 const std::vector<std::string> keys = {
         "if", "else", "for", "while", "def", "let", "class", "new", "break", "continue", "return",
-        "import", "public", "private"
+        "import", "public", "private", "as", "switch", "case", "default"
 };
 
 class Lexer {

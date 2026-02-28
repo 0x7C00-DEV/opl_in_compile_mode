@@ -337,14 +337,9 @@ private:
 				auto eg = (ElementGetNode*)expr;
 				TypeNode* array_type = get_expression_type(eg->array_name);
 				if (array_type) {
-					if (array_type->root_type == "Array" && array_type->child_type) {
+					if (array_type->root_type == "Array" && array_type->child_type)
 						return array_type->child_type;
-					}
-					std::string type_str = array_type->root_type;
-					if (type_str.size() > 3 && type_str.substr(type_str.size() - 3) == "arr") {
-						std::string elem_type = type_str.substr(0, type_str.size() - 3);
-						return make_type(elem_type);
-					}
+					else throw std::exception();
 				}
 				std::cout << "can not derivation type\n";
 				exit(-1);
@@ -695,6 +690,7 @@ private:
 			case AST::A_RETURN:    visit_return((ReturnNode*)node); break;
 			case AST::A_BREAK:     visit_break(begin, end); break;
 			case AST::A_CONTINUE:  visit_continue(begin, end); break;
+			case AST::A_SW: 	   visit_switch_node((SwitchNode*) node); break;
 			case AST::A_BIN_OP:    visit_bin_op((BinOpNode*)node); break;
 			case AST::A_BIT_NOT:   visit_bit_not_node(node); break;
 			case AST::A_MEMBER_ACCESS:
@@ -952,6 +948,26 @@ private:
 	
 	inline std::string make_l_name() {
 		return "lambda_" + std::to_string(lambda_count++);
+	}
+
+	void visit_switch_node(SwitchNode* node) {
+		std::string begin_ = make_addr(), end_ = make_addr();
+		emit(begin_, {OP_NOP});
+		visit_value(node->target_value);
+		for (auto i : node->units) {
+			if (!i->is_default) {
+				emit(make_addr(), {OP_DUP});
+				visit_value(i->value);
+				emit(make_addr(), {OP_EQ});
+				std::string not_eq_ = make_addr();
+				emit(make_addr(), {OP_JUMP_IF_FALSE, not_eq_});
+				visit_block(i->stmt, begin_, end_);
+				emit(not_eq_, {OP_NOP});
+			} else {
+				visit_block(i->stmt, begin_, end_);
+			}
+		}
+		emit(end_, {OP_NOP});
 	}
 	
 	void visit_lambda_node(LambdaNode* node) {

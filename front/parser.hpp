@@ -132,6 +132,39 @@ private:
         return new IfNode(cond, body, el);
     }
 
+    SwitchUnit* make_switch_unit() {
+        if (match("case")) {
+            advance();
+            AST* v = make_expression();
+            expect_data(":", get_pos());
+            Block* b = make_block();
+            return new SwitchUnit(v, b);
+        } else if (match("default")) {
+            advance();
+            expect_data(":", get_pos());
+            return new SwitchUnit(make_block());
+        } else {
+            printf("unknown token: ");
+            current->debug();
+            exit(-1);
+        }
+    }
+
+    SwitchNode* make_switch() {
+        expect_data("switch", get_pos());
+        expect_data("(", get_pos());
+        AST* tv = make_expression();
+        expect_data(")", get_pos());
+        std::vector<SwitchUnit*> units;
+        expect_data("{", get_pos());
+        while (current && !match("}")) {
+            units.push_back(make_switch_unit());
+            if (match("}")) break;
+        }
+        expect_data("}", get_pos());
+        return new SwitchNode(tv, units);
+    }
+
     FunctionNode* make_function_define() {
         if (match("def")) advance();
         std::string name = expect_get(Token::TT_ID);
@@ -256,6 +289,7 @@ private:
             else if (match("while")) codes.push_back(make_while());
             else if (match("import")) codes.push_back(make_import());
             else if (match("for")) codes.push_back(make_for());
+            else if (match("switch")) codes.push_back(make_switch());
             else if (match("continue")) codes.push_back(make_continue());
             else if (match("new")) codes.push_back(make_malloc());
             else if (match("break")) codes.push_back(make_break());
@@ -284,6 +318,7 @@ private:
             if (match("if")) codes.push_back(make_if());
             else if (match("while")) codes.push_back(make_while());
             else if (match("import")) codes.push_back(make_import());
+            else if (match("switch")) codes.push_back(make_switch());
             else if (match("for")) codes.push_back(make_for());
             else if (match("continue")) codes.push_back(make_continue());
             else if (match("new")) codes.push_back(make_malloc());
