@@ -212,7 +212,7 @@ private:
         expect_data(";", get_pos());
         is_continue = make_expression();
         expect_data(";", get_pos());
-        change = make_expression();
+        change = make_for_change();
         expect_data(")", get_pos());
         body = make_block();
         return new ForNode(init, is_continue, change, body);
@@ -389,6 +389,25 @@ private:
             advance();
         }
         return left;
+    }
+
+    AST* make_for_change() {
+        if (match("++") || match("--")) {
+            return make_expression();
+        } else if (match(Token::TT_ID)) {
+            auto tmp = make_value();
+            if (tmp->kind == AST::A_SELF_DEC || tmp->kind == AST::A_SELF_INC) {
+                return tmp;
+            }
+            std::string op = expect_get(Token::TT_OP);
+            auto value = make_expression();
+            return new SelfOperator(op, tmp, value);
+        } else {
+            std::cout << "unknown token: ";
+            current->debug();
+            std::cout << std::endl;
+            exit(-1);
+        }
     }
 
     AST* make_expression() { return make_bin_op_node(&Parser::make_expression5, {"||"}); }

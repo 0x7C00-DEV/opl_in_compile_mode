@@ -426,6 +426,9 @@ private:
 			case AST::A_SELF_DEC:
 				visit_self_dec_node(a);
 				return ;
+			case AST::A_SELF_OPERA:
+				visit_self_opera_node(a);
+				break;
 			case AST::A_MEM_MALLOC:
 				visit_mem_malloc((MemoryMallocNode*)a);
 				return;

@@ -1,5 +1,3 @@
-import "mod.copl" as mod;
-
 def main() {
-	println("hello, world");
+	
 }

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COPL 语言文档</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        h1 {
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            border-bottom: 1px solid #bdc3c7;
+            padding-bottom: 5px;
+        }
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+        }
+        code {
+            background: #ecf0f1;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95em;
+        }
+        pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #bdc3c7;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background: #f2f2f2;
+        }
+        .note {
+            background: #fcf8e3;
+            border-left: 4px solid #f1c40f;
+            padding: 10px 15px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>COPL 语言文档</h1>
+    <p>COPL 是一种简单的编译型语言，支持函数、模块化、基本数据类型和控制流。本文档介绍 COPL 的语法及如何编译运行程序。</p>
+
+    <h2>1. 编译与运行</h2>
+
+    <h3>1.1 编译</h3>
+    <pre><code>copl -c &lt;源文件&gt;</code></pre>
+    <p>例如：<code>copl -c test.opl</code><br>编译后生成同名的 <code>.copl</code> 字节码文件（如 <code>test.copl</code>）。</p>
+
+    <h3>1.2 运行</h3>
+    <pre><code>copl -r &lt;字节码文件&gt;</code></pre>
+    <p>例如：<code>copl -r test.copl</code><br>直接执行字节码。</p>
+
+    <h3>1.3 反汇编</h3>
+    <pre><code>copl -d &lt;字节码文件&gt;</code></pre>
+    <p>例如：<code>copl -d test.copl</code><br>以可读形式显示字节码指令，用于调试。</p>
+
+    <h2>2. 基本语法</h2>
+
+    <h3>2.1 注释</h3>
+    <p>使用 <code>#</code> 开头单行注释。</p>
+    <pre><code># 这是一个注释</code></pre>
+
+    <h3>2.2 数据类型</h3>
+    <ul>
+        <li><code>int</code>：整数（32位）</li>
+        <li><code>float</code>：浮点数（双精度）</li>
+        <li><code>bool</code>：布尔值（<code>true</code> 或 <code>false</code>）</li>
+        <li><code>string</code>：字符串（双引号或单引号包围）</li>
+        <li><code>null</code>：空值</li>
+    </ul>
+
+    <h3>2.3 变量定义</h3>
+    <p>使用 <code>let</code> 关键字定义变量，必须指定类型，可选初始化值。</p>
+    <pre><code>let x: int = 10;
+let y: float;
+let name: string = "COPL";
+let flag: bool = true;</code></pre>
+    <p>变量赋值：</p>
+    <pre><code>x = 20;
+y = 3.14;</code></pre>
+
+    <h3>2.4 运算符</h3>
+    <ul>
+        <li>算术：<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code>, <code>**</code>（乘方）</li>
+        <li>比较：<code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code></li>
+        <li>逻辑：<code>&amp;&amp;</code>, <code>||</code>, <code>!</code></li>
+        <li>位运算：<code>&amp;</code>, <code>|</code>, <code>&lt;&lt;</code>, <code>&gt;&gt;</code>, <code>~</code></li>
+        <li>自增/自减：<code>++</code>, <code>--</code>（支持前缀和后缀）</li>
+        <li>复合赋值：<code>+=</code>, <code>-=</code>, <code>*=</code>, <code>/=</code>, <code>%=</code>, <code>&lt;&lt;=</code>, <code>&gt;&gt;=</code>, <code>&amp;=</code>, <code>|=</code></li>
+    </ul>
+
+    <h3>2.5 控制流</h3>
+
+    <h4>if 语句</h4>
+    <pre><code>if (条件) {
+    # 代码块
+} else {
+    # 可选的 else 分支
+}</code></pre>
+
+    <h4>while 循环</h4>
+    <pre><code>while (条件) {
+    # 循环体
+}</code></pre>
+
+    <h4>for 循环</h4>
+    <pre><code>for (let i: int = 0; i &lt; 10; i = i + 1) {
+    # 循环体
+}</code></pre>
+
+    <h4>break / continue</h4>
+    <pre><code>while (true) {
+    if (条件) break;
+    if (其他条件) continue;
+}</code></pre>
+
+    <h4>return 语句</h4>
+    <pre><code>return 表达式;   # 从函数返回
+return;          # 无返回值（相当于返回 null）</code></pre>
+
+    <h2>3. 函数定义与调用</h2>
+    <p>使用 <code>def</code> 关键字定义函数，参数必须指定类型，返回值类型由实际 <code>return</code> 推断。</p>
+    <pre><code>def add(a: int, b: int) {
+    return a + b;
+}
+
+def main() {
+    let result: int = add(3, 5);
+    println(result);
+}</code></pre>
+    <p>函数可以嵌套调用，也支持递归。</p>
+
+    <h2>4. 模块系统</h2>
+    <p>使用 <code>import</code> 导入其他文件（编译后的字节码），并指定别名。</p>
+    <pre><code>import "math.copl" as math;
+
+def main() {
+    let x: float = 16.0;
+    let y: float = math.sqrt(x);   # 调用模块中的函数
+    println(y);
+}</code></pre>
+    <ul>
+        <li>导入语句必须放在文件顶部。</li>
+        <li>被导入的文件必须已经编译成 <code>.copl</code> 字节码。</li>
+        <li>通过 <code>模块名.函数名</code> 调用模块内的函数。</li>
+    </ul>
+
+    <h2>5. 内置函数</h2>
+    <p>COPL 提供一些内置函数，可直接使用：</p>
+    <table>
+        <thead>
+            <tr>
+                <th>函数名</th>
+                <th>参数</th>
+                <th>说明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>print</code></td>
+                <td>任意类型</td>
+                <td>打印内容，不换行</td>
+            </tr>
+            <tr>
+                <td><code>println</code></td>
+                <td>任意类型</td>
+                <td>打印内容并换行</td>
+            </tr>
+            <tr>
+                <td><code>input</code></td>
+                <td>字符串提示</td>
+                <td>读取一行输入，返回字符串</td>
+            </tr>
+            <tr>
+                <td><code>debug</code></td>
+                <td>任意值</td>
+                <td>显示值的类型和地址信息</td>
+            </tr>
+            <tr>
+                <td><code>append</code></td>
+                <td>目标，值</td>
+                <td>向数组或字符串追加元素</td>
+            </tr>
+            <tr>
+                <td><code>size</code></td>
+                <td>数组或字符串</td>
+                <td>返回长度</td>
+            </tr>
+            <tr>
+                <td><code>str2int</code></td>
+                <td>字符串</td>
+                <td>将字符串转为整数</td>
+            </tr>
+            <tr>
+                <td><code>not_null</code></td>
+                <td>任意值</td>
+                <td>返回是否不为 <code>null</code></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>6. 示例程序</h2>
+
+    <h3>6.1 计算平方根（牛顿迭代法）</h3>
+    <p>文件名：<code>math.opl</code></p>
+    <pre><code>def sqrt(x: float) {
+    if (x == 0.0 || x == 1.0) {
+        return x;
+    }
+    let guess: float = x / 2.0;
+    while (true) {
+        let new_guess: float = (guess + x / guess) / 2.0;
+        if (new_guess == guess || (new_guess - guess &lt; 0.000001 &amp;&amp; new_guess - guess &gt; -0.000001)) {
+            return new_guess;
+        }
+        guess = new_guess;
+    }
+}</code></pre>
+
+    <h3>6.2 主程序</h3>
+    <p>文件名：<code>main.opl</code></p>
+    <pre><code>import "math.copl" as math;
+
+def main() {
+    let num: float = 16.0;
+    let root: float = math.sqrt(num);
+    println(root);   # 输出 4.0
+}</code></pre>
+
+    <h3>6.3 编译运行</h3>
+    <pre><code>copl -c math.opl
+copl -c main.opl
+copl -r main.copl</code></pre>
+
+    <h2>7. 注意事项</h2>
+    <div class="note">
+        <ul>
+            <li>变量必须先定义后使用。</li>
+            <li>函数内可以访问外部作用域的变量（闭包），目前支持简单的嵌套作用域。</li>
+            <li>字符串不可变，但可以通过 <code>append</code> 修改（谨慎使用）。</li>
+       
+        </ul>
+    </div>
+
+    <hr>
+    <p style="text-align: center; color: #7f8c8d;">COPL 语言文档 · 版本 1.0</p>
+</body>
+</html>
