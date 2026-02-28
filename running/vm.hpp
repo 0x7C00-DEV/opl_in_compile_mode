@@ -37,10 +37,17 @@ public:
         execute();
     }
 	
-	VM(Frame* f, Module* m) {
+	VM(Frame* f, VM* vm, bool is_debug) {
+		this->is_debug = is_debug;
+		std::string name = vm->current_module;
+		for (auto l : vm->modules) {
+			if (l->name == name)
+				this->frames = l->funcs;
+		}
+		for (auto l : vm->modules)
+			if (l->name != name)
+				modules.push_back(l);
 		calls.push_back(f);
-		for (auto k : m->funcs)
-			frames.push_back(k);
 		execute();
 	}
 
@@ -762,6 +769,10 @@ public:
                     Frame* caller = get_current()->caller;
                     calls.pop_back();
                     if (caller) caller->push(retval);
+					else {
+						std::cout << "is null!\n";
+	                    exit(-1);
+					}
                     debug();
                     break;
                 }
@@ -862,13 +873,7 @@ public:
 			            callee->push(caller->pop());
 					if (!is_p_modile) calls.push_back(callee);
 					else {
-						Module* m = nullptr;
-						for (auto u : modules)
-							if (u->name == current_module){
-								m = u;
-								break;
-							}
-						VM sub_proc(callee, m);
+						VM sub_proc(callee, this, is_debug);
 						is_p_modile = false;
 						current_module = "";
 					}

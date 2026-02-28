@@ -2,4 +2,4 @@ import "math.copl" as math;
 
 def main() {
 	println(math.fib(12));
-} 
+}

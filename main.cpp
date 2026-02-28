@@ -33,7 +33,7 @@ int release(int argc, char** argv) {
     std::string decide = argv[1];
     std::string name = argv[2];
     if (decide == "-r") {
-        VM vm(name);
+        VM vm(name, false);
         return 0;
     } else if (decide == "-c") {
         std::string data = read_file(name);

@@ -411,6 +411,7 @@ struct Frame {
 
     STACK_VALUE* pop() {
         if (stack.empty()) {
+			std::cout << "Name = " << func_name << std::endl;
             printf("RuntimeError in pop: pop from empty stack\n");
             exit(-1);
         }
@@ -470,7 +471,7 @@ static const struct {
      {"OP_COPY", 0},
      {"OP_LOAD_FUNC_ADDR", 0},
      {"OP_LOAD_MODULE_METHOD", 1},
-     {"OP_LOAD_MODULE", 1},
+     {"OP_LOAD_MODULE", 2},
      {"OP_POP", 0},
      {"OP_DUP", 0},
      {"OP_PUSH", 1},
