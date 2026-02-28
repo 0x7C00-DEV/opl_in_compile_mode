@@ -214,6 +214,16 @@ public:
 		notnul->args_len = 1;
 		notnul->func_id = target->get_cnt();
 		target->regist_function(notnul);
+		
+		Frame* loadfile = new Frame(&read_file, "read_file");
+		loadfile->args_len = 1;
+		loadfile->func_id = target->get_cnt();
+		target->regist_function(loadfile);
+		
+		Frame* int2str_ = new Frame(&int2str, "int2str");
+		int2str_->args_len = 1;
+		int2str_->func_id = target->get_cnt();
+		target->regist_function(int2str_);
 	}
 	
 	void compile_all() {
@@ -245,10 +255,8 @@ private:
 		}
 		for (auto& cmd : code_tmp.code_cache) {
 			for (auto& unit : cmd.codes) {
-				if (unit.label.empty())
-					code_tmp.current->op_codes.push_back(unit.op);
-				else
-					code_tmp.current->op_codes.push_back(label_to_addr[unit.label]);
+				if (unit.label.empty()) code_tmp.current->op_codes.push_back(unit.op);
+				else code_tmp.current->op_codes.push_back(label_to_addr[unit.label]);
 			}
 		}
 	}

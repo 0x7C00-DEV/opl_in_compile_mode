@@ -1,0 +1,23 @@
+class Node {
+	public left: Node;
+	public root: int;
+	public right: Node;
+
+	constructor(root: int, left: Node, right: Node) {
+		this.root = root;
+		this.left = left;
+		this.right = right;
+	}
+}
+
+def print_(n: Node) {
+	if (!not_null(n)) return;
+	print_(n.left);
+	println(n.root);
+	print_(n.right);
+}
+
+def main() {
+	let root: Node = new Node(1, new Node(2, null, null), new Node(3, null, null));
+	print_(root);
+}

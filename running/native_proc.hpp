@@ -43,6 +43,7 @@ std::string get_string(OPL_BasicValue* tmp) {
     return res;
 }
 
+
 std::string get_string(STACK_VALUE* arg) {
     if (arg->is_heap_ref) {
         return get_string(arg->obj);
@@ -99,6 +100,44 @@ STACK_VALUE* get_id_info(std::vector<STACK_VALUE*> args) {
     return VM_NUL;
 }
 
+
+
+OPL_BasicValue* val_conv(STACK_VALUE* value) {
+	if (value->is_heap_ref) return value->obj;
+	OPL_BasicValue* new_obj = nullptr;
+	switch (value->kind) {
+		case STACK_VALUE::S_INT:
+			new_obj = new OPL_Integer(value->i_val);
+			break;
+		case STACK_VALUE::S_BOOL:
+			new_obj = new OPL_Bool(value->b_val);
+			break;
+		case STACK_VALUE::S_DOUBLE:
+			new_obj = new OPL_Float(value->d_val);
+			break;
+		case STACK_VALUE::S_RAW:
+			new_obj = new OPL_Point(value->raw_ptr);
+			break;
+		case STACK_VALUE::S_NULL:
+			new_obj = new OPL_Null;
+			break;
+		case STACK_VALUE::S_STR:
+			new_obj = new OPL_String(value->str_value);
+			break;
+		case STACK_VALUE::S_FUC:
+			new_obj = new OPL_Point(value->raw_ptr);
+			break;
+		default:
+			return nullptr;
+	}
+	new_obj->next = nullptr;
+	return new_obj;
+}
+
+inline std::string get_integer(STACK_VALUE* arg)  {
+	return std::to_string(((OPL_Integer*)val_conv(arg))->i);
+}
+
 STACK_VALUE* input(std::vector<STACK_VALUE*> args) {
     print(args);
     std::string res;
@@ -120,39 +159,7 @@ STACK_VALUE* str2int(std::vector<STACK_VALUE*> args) {
 }
 
 STACK_VALUE* int2str(std::vector<STACK_VALUE*> args) {
-    return VM_NUL;
-}
-
-OPL_BasicValue* val_conv(STACK_VALUE* value) {
-    if (value->is_heap_ref) return value->obj;
-    OPL_BasicValue* new_obj = nullptr;
-    switch (value->kind) {
-    case STACK_VALUE::S_INT:
-        new_obj = new OPL_Integer(value->i_val);
-        break;
-    case STACK_VALUE::S_BOOL:
-        new_obj = new OPL_Bool(value->b_val);
-        break;
-    case STACK_VALUE::S_DOUBLE:
-        new_obj = new OPL_Float(value->d_val);
-        break;
-    case STACK_VALUE::S_RAW:
-        new_obj = new OPL_Point(value->raw_ptr);
-        break;
-    case STACK_VALUE::S_NULL:
-        new_obj = new OPL_Null;
-        break;
-    case STACK_VALUE::S_STR:
-        new_obj = new OPL_String(value->str_value);
-        break;
-    case STACK_VALUE::S_FUC:
-        new_obj = new OPL_Point(value->raw_ptr);
-        break;
-    default:
-        return nullptr;
-    }
-    new_obj->next = nullptr;
-    return new_obj;
+    return STACK_VALUE::make_str(get_integer(args[0]));
 }
 
 STACK_VALUE* append(std::vector<STACK_VALUE*> args) {
