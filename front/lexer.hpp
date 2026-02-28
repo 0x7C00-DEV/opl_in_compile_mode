@@ -94,7 +94,6 @@ private:
                 else if (current == 'r') tmp += '\r', advance();
                 else if (current == 'b') tmp += '\b', advance();
                 else if (current == 't') tmp += '\t', advance();
-                else if (current == 'e') tmp += '\e', advance();
                 else if (current == 'a') tmp += '\a', advance();
                 else if (current == 'f') tmp += '\f', advance();
                 else if (current == 'v') tmp += '\v', advance();
