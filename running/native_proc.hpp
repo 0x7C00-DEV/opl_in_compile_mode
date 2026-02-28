@@ -229,7 +229,9 @@ const std::unordered_map<std::string, BUILD_IN_PROC*> builtins = {
     {"append", append},
     {"size", length},
     {"str2int", str2int},
-    {"not_null", not_null}
+    {"not_null", not_null},
+    {"read_file", read_file},
+    {"int2str", int2str}
 };
 
 #endif

@@ -9,8 +9,9 @@
 struct VarInfo {
 	std::string name;
 	TypeNode* type;
+	ObjectNode::AccessState as;
 	VarInfo() {}
-	VarInfo(std::string name, TypeNode* type) : name(name), type(type) {}
+	VarInfo(std::string name, TypeNode* type, ObjectNode::AccessState as) : as(as), name(name), type(type) {}
 };
 
 struct ObjectInfo {
@@ -110,7 +111,7 @@ struct Scope {
 	std::unordered_map<std::string, TypeNode*> var_type;
 	
 	VarInfo get_var(std::string name) {
-		return {name, var_type[name]};
+		return {name, var_type[name], ObjectNode::PUBLIC};
 	}
 	
 	void add_var(std::string name, int id, TypeNode* type) {
@@ -282,12 +283,12 @@ private:
 	
 	VarInfo get_var(std::string name) {
 		if (name == "this") {
-			return {name, new TypeNode(current_class)};
+			return {name, new TypeNode(current_class), ObjectNode::PUBLIC};
 		}
 		for (int i = code_tmp.scopes.size() - 1; i >= 0; --i)
 			if (code_tmp.scopes[i].var_type.find(name) != code_tmp.scopes[i].var_type.end())
 				return code_tmp.scopes[i].get_var(name);
-		return {name, target->get_var_type(name)};
+		return {name, target->get_var_type(name), ObjectNode::PUBLIC};
 	}
 	
 	bool var_is_exist(std::string name) {
@@ -776,6 +777,13 @@ private:
 			auto ma = (MemberAccessNode*)node;
 			TypeNode* parent_type = visit_member_access(ma->parent);
 			if (parent_type->__kind != TypeNode::TK_MODULE) {
+				if (current_class != parent_type->root_type) {
+					auto tmp = target->get_class(parent_type->root_type);
+					if (tmp.get_var_info(ma->member).as != ObjectNode::PUBLIC) {
+						std::cout << "Name '" << ma->member << "' is not a public member\n";
+						exit(-1);
+					}
+				}
 				emit(make_addr(), {OP_MEMBER_GET, target->get_class(parent_type->root_type).get_offset(ma->member)});
 				return target->get_class(parent_type->root_type).get_var_info(ma->member).type;
 			} else {
@@ -1022,7 +1030,7 @@ private:
 		for (auto& p : node->members) {
 			if (p.second->kind == AST::A_VAR_DEF) {
 				auto vd = (VarDefineNode*)p.second;
-				infos.push_back({vd->name, vd->type});
+				infos.push_back({vd->name, vd->type, node->as[vd->name]});
 			}
 		}
 		add_object(node->name, infos);
