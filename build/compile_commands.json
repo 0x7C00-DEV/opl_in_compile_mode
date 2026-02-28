@@ -1,0 +1,8 @@
+[
+{
+  "directory": "D:/CLionProjects/COPL/build",
+  "command": "D:\\Tools\\mingw64\\bin\\g++.exe   -g -o CMakeFiles\\COPL.dir\\main.cpp.obj -c D:\\CLionProjects\\COPL\\main.cpp",
+  "file": "D:/CLionProjects/COPL/main.cpp",
+  "output": "CMakeFiles/COPL.dir/main.cpp.obj"
+}
+]

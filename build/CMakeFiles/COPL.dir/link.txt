@@ -1,0 +1,3 @@
+"D:\Program files\CMake\bin\cmake.exe" -E rm -f CMakeFiles\COPL.dir/objects.a
+D:\Tools\mingw64\bin\ar.exe qc CMakeFiles\COPL.dir/objects.a @CMakeFiles\COPL.dir\objects1.rsp
+D:\Tools\mingw64\bin\g++.exe -g -Wl,--whole-archive CMakeFiles\COPL.dir/objects.a -Wl,--no-whole-archive -o COPL.exe -Wl,--out-implib,libCOPL.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\COPL.dir\linkLibs.rsp
