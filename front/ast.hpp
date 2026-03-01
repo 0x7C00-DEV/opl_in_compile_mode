@@ -33,8 +33,6 @@ public:
         this->path = path;
         this->re_name = re_name;
     }
-
-    ~ImportNode() { delete &path; }
 };
 
 class FalseNode : public AST {
@@ -55,10 +53,6 @@ public:
         this->ipre = i;
     }
 
-    ~SelfIncNode() {
-        delete &ipre;
-        delete id;
-    }
 };
 
 class MemoryMallocNode : public AST {
@@ -70,10 +64,6 @@ public:
         this->name = name;
         this->args = args;
         this->is_call_c = is_call_constructor;
-    }
-    ~MemoryMallocNode() {
-        delete &name;
-        delete &args;
     }
 };
 
@@ -88,7 +78,6 @@ public:
 
     ~SelfDecNode() {
         delete id;
-        delete &ipre;
     }
 };
 
@@ -103,7 +92,6 @@ public:
     }
 
     ~BinOpNode() {
-        delete &op;
         delete left;
         delete right;
     }
@@ -120,7 +108,6 @@ public:
 
     ~MemberAccessNode() {
         delete parent;
-        delete &member;
     }
 };
 
@@ -129,10 +116,6 @@ public:
     std::string str;
     StringNode(std::string str) : AST(AST::A_STRING) {
         this->str = str;
-    }
-
-    ~StringNode() {
-        delete &str;
     }
 };
 
@@ -151,10 +134,6 @@ public:
     BitNotNode(AST* expr) : AST(AST::A_BIT_NOT) {
         this->expr = expr;
     }
-
-    ~BitNotNode() {
-        delete &expr;
-    }
 };
 
 class IdNode : public AST {
@@ -162,10 +141,6 @@ public:
     std::string id;
     IdNode(std::string id) : AST(AST::A_ID) {
         this->id = id;
-    }
-
-    ~IdNode() {
-        delete &id;
     }
 };
 
@@ -180,7 +155,6 @@ public:
 
     ~CallNode() {
         delete func_name;
-        delete &args;
     }
 };
 
@@ -216,10 +190,6 @@ public:
     std::vector<AST*> codes;
     Block(std::vector<AST*> codes) : AST(A_BLOCK) {
         this->codes = codes;
-    }
-
-    ~Block() {
-        delete &codes;
     }
 };
 
@@ -296,7 +266,6 @@ public:
     }
 
     ~LambdaNode() {
-        delete &args;
         delete body;
     }
 };
@@ -313,7 +282,6 @@ public:
     }
 
     ~VarDefineNode() {
-        delete &name;
         delete init_value;
     }
 };
@@ -331,8 +299,6 @@ public:
 
     ~FunctionNode() {
         delete body;
-        delete &name;
-        delete &args;
     }
 };
 
@@ -348,7 +314,6 @@ public:
     }
 
     ~SelfOperator() {
-        delete &op;
         delete target;
         delete value;
     }
@@ -440,16 +405,6 @@ public:
         this->as = as;
 		this->extern_class = ex;
     }
-
-    AST* get_constructor() {
-        if (members.find("constructor") == members.end())
-            return nullptr;
-        return members[name];
-    }
-
-    ~ObjectNode() {
-        delete &name;
-    }
 };
 
 class NullNode : public AST {
@@ -463,10 +418,6 @@ public:
     ArrayNode(std::vector<AST*> elements) : AST(AST::A_ARRAY){
         this->elements = elements;
     }
-
-    ~ArrayNode() {
-        delete &elements;
-    }
 };
 
 class FloatNode : public AST {
@@ -474,10 +425,6 @@ public:
     std::string number;
     FloatNode(std::string number) : AST(AST::A_FLO) {
         this->number = number;
-    }
-
-    ~FloatNode() {
-        delete &number;
     }
 };
 
