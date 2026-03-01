@@ -10,12 +10,15 @@ struct VarInfo {
 	std::string name;
 	TypeNode* type;
 	ObjectNode::AccessState as;
+	std::string origin_class;
 	VarInfo() {}
-	VarInfo(std::string name, TypeNode* type, ObjectNode::AccessState as) : as(as), name(name), type(type) {}
+	VarInfo(std::string name, TypeNode* type, ObjectNode::AccessState as, std::string origin = "")
+		: as(as), name(name), type(type), origin_class(origin) {}
 };
 
 struct ObjectInfo {
 	std::string name;
+	std::vector<ObjectInfo*> ext_class;
 	std::vector<VarInfo> info;
 	
 	int get_offset(std::string vname) {
@@ -59,8 +62,9 @@ struct CompileOutput {
 	std::unordered_map<std::string, ObjectInfo> object_size_record;
 	int fn_cnt = 0;
 	
-	void regist_class(std::string name, std::vector<VarInfo> members) {
+	void regist_class(std::string name, std::vector<VarInfo> members, std::vector<ObjectInfo*> _ext_class) {
 		ObjectInfo inf;
+		inf.ext_class = _ext_class;
 		inf.name = name;
 		inf.info = members;
 		object_size_record[name] = inf;
@@ -704,7 +708,7 @@ private:
 			case AST::A_RETURN:    visit_return((ReturnNode*)node); break;
 			case AST::A_BREAK:     visit_break(begin, end); break;
 			case AST::A_CONTINUE:  visit_continue(begin, end); break;
-			case AST::A_SW: 	   visit_switch_node((SwitchNode*) node); break;
+			case AST::A_SW:        visit_switch_node((SwitchNode*) node); break;
 			case AST::A_BIN_OP:    visit_bin_op((BinOpNode*)node); break;
 			case AST::A_BIT_NOT:   visit_bit_not_node(node); break;
 			case AST::A_MEMBER_ACCESS:
@@ -782,15 +786,14 @@ private:
 			auto ma = (MemberAccessNode*)node;
 			TypeNode* parent_type = visit_member_access(ma->parent);
 			if (parent_type->__kind != TypeNode::TK_MODULE) {
-				if (current_class != parent_type->root_type) {
-					auto tmp = target->get_class(parent_type->root_type);
-					if (tmp.get_var_info(ma->member).as != ObjectNode::PUBLIC) {
-						std::cout << "Name '" << ma->member << "' is not a public member\n";
-						exit(-1);
-					}
+				auto obj_info = target->get_class(parent_type->root_type);
+				auto var_info = obj_info.get_var_info(ma->member);
+				if (current_class != parent_type->root_type && var_info.as == ObjectNode::PRIVATE && var_info.origin_class != current_class) {
+					std::cout << "Name '" << ma->member << "' is not a public member\n";
+					exit(-1);
 				}
-				emit(make_addr(), {OP_MEMBER_GET, target->get_class(parent_type->root_type).get_offset(ma->member)});
-				return target->get_class(parent_type->root_type).get_var_info(ma->member).type;
+				emit(make_addr(), {OP_MEMBER_GET, obj_info.get_offset(ma->member)});
+				return var_info.type;
 			} else {
 				emit(make_addr(), {OP_LOAD_MODULE_METHOD, add_const(STACK_VALUE::make_str(ma->member))});
 				TypeNode *tn = new TypeNode("func");
@@ -970,7 +973,7 @@ private:
 	inline std::string make_l_name() {
 		return "lambda_" + std::to_string(lambda_count++);
 	}
-
+	
 	void visit_switch_node(SwitchNode* node) {
 		std::string begin_ = make_addr(), end_ = make_addr();
 		emit(begin_, {OP_NOP});
@@ -1025,25 +1028,50 @@ private:
 		}
 	}
 	
-	void add_object(std::string name, std::vector<VarInfo> infos) {
-		target->regist_class(name, infos);
+	void add_object(std::string name, std::vector<VarInfo> infos, std::vector<ObjectInfo*> ext_class) {
+		target->regist_class(name, infos, ext_class);
 	}
 	
 	void visit_class_node(ObjectNode* node) {
 		std::vector<VarInfo> infos;
 		current_class = node->name;
+		std::vector<ObjectInfo*> base_infos;
+		for (auto& base_name : node->extern_class) {
+			if (target->object_size_record.find(base_name) == target->object_size_record.end()) {
+				std::cout << "Base class '" << base_name << "' not defined\n";
+				exit(-1);
+			}
+			ObjectInfo& base_info = target->object_size_record[base_name];
+			base_infos.push_back(&base_info);
+			for (auto& var : base_info.info) {
+				for (auto& existing : infos) {
+					if (existing.name == var.name) {
+						std::cout << "Member '" << var.name << "' conflicts with base class member\n";
+						exit(-1);
+					}
+				}
+				infos.push_back({var.name, var.type, var.as, base_name});
+			}
+		}
 		for (auto& p : node->members) {
 			if (p.second->kind == AST::A_VAR_DEF) {
 				auto vd = (VarDefineNode*)p.second;
-				infos.push_back({vd->name, vd->type, node->as[vd->name]});
+				for (auto& existing : infos) {
+					if (existing.name == vd->name) {
+						std::cout << "Member '" << vd->name << "' conflicts with base class member\n";
+						exit(-1);
+					}
+				}
+				infos.push_back({vd->name, vd->type, node->as[vd->name], node->name});
 			}
 		}
-		add_object(node->name, infos);
+		add_object(node->name, infos, base_infos);
 		for (auto& p : node->members) {
 			if (p.second->kind == AST::A_FUNC_DEFINE) {
 				auto fn = (FunctionNode*)p.second;
 				if (fn->name == "constructor")
 					fn->name = node->name + "$constructor";
+				else fn->name = node->name + "$" + fn->name;
 				visit_func_node(fn);
 			}
 		}

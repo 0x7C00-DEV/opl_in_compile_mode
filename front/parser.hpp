@@ -256,6 +256,16 @@ private:
         std::unordered_map<std::string, AST*> members;
         std::unordered_map<std::string, ObjectNode::AccessState> as;
         std::string name = expect_get(Token::TT_ID);
+		std::vector<std::string> ext;
+		if (match("(")) {
+			advance();
+			while (current && !match(")")) {
+				ext.push_back(expect_get(Token::TT_ID));
+				if (match(")")) break;
+				expect_data(",", get_pos());
+			}
+			expect_data(")", get_pos());
+		}
         expect_data("{", get_pos());
         ObjectNode::AccessState _as = ObjectNode::PRIVATE;
         while (current && !match("}")) {
@@ -279,7 +289,7 @@ private:
             }
         }
         expect_data("}", get_pos());
-        return new ObjectNode(name, members, as);
+        return new ObjectNode(name, members, as, ext);
     }
 
     Block* make_block() {

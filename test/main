@@ -1,5 +1,17 @@
+class A {
+	public x: int;
+	constructor() {
+		this.x = 12;
+	}
+}
 
+class B(A) {
+	public g: int;
+	constructor() {}
+}
 
 def main() {
-	
+	let f: B = new B();
+	f.x = 10;
+	println(f.x);
 }

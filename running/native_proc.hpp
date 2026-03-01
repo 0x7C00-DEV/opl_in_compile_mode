@@ -208,7 +208,7 @@ STACK_VALUE* pop_back(std::vector<STACK_VALUE*> args) {
 
 STACK_VALUE* not_null(std::vector<STACK_VALUE*> args) {
     STACK_VALUE* v = args[0];
-    bool is_null = false;
+    bool is_null;
     if (v->is_heap_ref) {
         is_null = (v->obj == nullptr || v->obj->kind == BV_NULL);
     } else {

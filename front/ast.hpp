@@ -427,15 +427,18 @@ public:
 class ObjectNode : public AST {
 public:
     std::string name;
+	
+	std::vector<std::string> extern_class;
 
     enum AccessState { PUBLIC, PRIVATE };
 
     std::unordered_map<std::string, AST*> members;
     std::unordered_map<std::string, AccessState> as;
-    ObjectNode(std::string name, std::unordered_map<std::string, AST*> members, std::unordered_map<std::string, AccessState> as) : AST(A_CLASS) {
+    ObjectNode(std::string name, std::unordered_map<std::string, AST*> members, std::unordered_map<std::string, AccessState> as, std::vector<std::string> ex) : AST(A_CLASS) {
         this->members = members;
         this->name = name;
         this->as = as;
+		this->extern_class = ex;
     }
 
     AST* get_constructor() {

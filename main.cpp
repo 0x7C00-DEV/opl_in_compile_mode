@@ -78,5 +78,6 @@ void compile(std::string __in__, std::string __out__) {
 }
 
 int main(int argc, char **argv) {
-    return release(argc, argv);
+	file();
+    return 0;
 }

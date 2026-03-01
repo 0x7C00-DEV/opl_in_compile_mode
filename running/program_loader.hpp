@@ -31,7 +31,7 @@ std::vector<Frame*> load_bytecode(const std::string& filename,
     std::vector<Frame*> frames;
     frames.reserve(func_cnt);
 
-    for (uint32_t i = 0; i < func_cnt; ++i) {
+    for (uint32_t t_i = 0; t_i < func_cnt; ++t_i) {
         uint32_t name_len;
         fread(&name_len, sizeof(name_len), 1, file);
         std::string func_name(name_len, '\0');
