@@ -186,6 +186,23 @@ STACK_VALUE* append(std::vector<STACK_VALUE*> args) {
 }
 
 STACK_VALUE* pop_back(std::vector<STACK_VALUE*> args) {
+	auto tmp = args[0];
+	if (tmp->is_heap_ref && tmp->obj) {
+		if (tmp->obj->kind == BV_ARRAY) {
+			((OPL_Array*)tmp->obj)->elements.pop_back();
+		} else if (tmp->obj->kind == BV_STRING) {
+			((OPL_String*)tmp->obj)->str.pop_back();
+		} else {
+			printf("Error: want a string or array\n");
+			exit(-1);
+		}
+	} else {
+		if (tmp->kind != STACK_VALUE::S_STR) {
+			printf("Error: want a string\n");
+			exit(-1);
+		}
+		tmp->str_value.pop_back();
+	}
     return VM_NUL;
 }
 
@@ -231,7 +248,8 @@ const std::unordered_map<std::string, BUILD_IN_PROC*> builtins = {
     {"str2int", str2int},
     {"not_null", not_null},
     {"read_file", read_file},
-    {"int2str", int2str}
+    {"int2str", int2str},
+    {"pop_back", pop_back}
 };
 
 #endif

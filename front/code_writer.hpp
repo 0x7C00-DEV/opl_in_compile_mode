@@ -64,8 +64,7 @@ void write_value(FILE* code_file, STACK_VALUE* value) {
                 fwrite(&type, 1, 1, code_file);
                 break;
             }
-            case BV_ARRAY:
-            case BV_OBJ:
+            case BV_ARRAY: case BV_OBJ:
             case BV_RAW_POINT: {
                 uint8_t type = BNULL;
                 fwrite(&type, 1, 1, code_file);

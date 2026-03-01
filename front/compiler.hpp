@@ -225,6 +225,11 @@ public:
 		int2str_->args_len = 1;
 		int2str_->func_id = target->get_cnt();
 		target->regist_function(int2str_);
+		
+		Frame* popback = new Frame(&pop_back, "pop_back");
+		popback->args_len = 1;
+		popback->func_id = target->get_cnt();
+		target->regist_function(popback);
 	}
 	
 	void compile_all() {
