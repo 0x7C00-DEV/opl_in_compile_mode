@@ -14,4 +14,4 @@ add_executable(COPL main.cpp
         running/native_proc.hpp
         front/code_writer.hpp
         running/program_loader.hpp
-        resfile_types.hpp)
+        resfile_types.hpp pathproc.hpp)

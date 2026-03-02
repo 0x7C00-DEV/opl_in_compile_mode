@@ -1,7 +1,7 @@
 #ifndef COPL_ASM_HPP
 #define COPL_ASM_HPP
 
-enum OpKind { FLOAT, INT };
+enum OpKind { OPL_FLOAT, OPL_INT };
 
 enum Opcode : int {
     OP_LOAD_CONST,

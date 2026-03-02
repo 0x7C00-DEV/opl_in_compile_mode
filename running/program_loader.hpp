@@ -157,7 +157,6 @@ std::vector<Frame*> load_bytecode(const std::string& filename,
             frame->func_id = func_id;
             frame->args_len = args_len;
         }
-
         frames.push_back(frame);
     }
 

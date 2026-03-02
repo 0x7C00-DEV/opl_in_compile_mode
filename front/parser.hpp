@@ -362,7 +362,7 @@ private:
             current = &tokens[pos];
     }
 
-    AST* make_bin_op_node(CALLBACK_FUNCTION left_process, std::vector<std::string> opers, CALLBACK_FUNCTION right_process = nullptr) {
+    AST* make_bin_op_node(OPL_CALLBACK_FUNCTION left_process, std::vector<std::string> opers, OPL_CALLBACK_FUNCTION right_process = nullptr) {
         if (right_process == nullptr)
             right_process = left_process;
         AST* left = (this->*left_process)();
@@ -375,7 +375,7 @@ private:
         return left;
     }
 
-    std::vector<AST*> make_area(std::string begin, std::string end, std::string split, CALLBACK_FUNCTION proc, int cnt = -1) {
+    std::vector<AST*> make_area(std::string begin, std::string end, std::string split, OPL_CALLBACK_FUNCTION proc, int cnt = -1) {
         std::vector<AST*> res;
         expect_data(begin, get_pos());
         int count = 0;

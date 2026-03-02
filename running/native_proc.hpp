@@ -100,8 +100,6 @@ STACK_VALUE* get_id_info(std::vector<STACK_VALUE*> args) {
     return VM_NUL;
 }
 
-
-
 OPL_BasicValue* val_conv(STACK_VALUE* value) {
 	if (value->is_heap_ref) return value->obj;
 	OPL_BasicValue* new_obj = nullptr;

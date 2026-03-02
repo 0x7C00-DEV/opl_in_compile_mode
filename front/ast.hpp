@@ -373,7 +373,6 @@ public:
     }
 };
 
-
 class BreakNode : public AST {
 public:
     BreakNode() : AST(A_BREAK) {}
@@ -430,7 +429,7 @@ public:
 
 class Parser;
 
-typedef AST*(Parser::*CALLBACK_FUNCTION)();
+typedef AST*(Parser::*OPL_CALLBACK_FUNCTION)();
 
 void make_error(std::string error_type, std::string error_info, Position error_pos) {
     std::cout << error_type << ": " << error_info << " at lin " << error_pos.lin << ", col " << error_pos.col << std::endl;

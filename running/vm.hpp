@@ -2,7 +2,9 @@
 #define COPL_VM_HPP
 #include "program_loader.hpp"
 #include "value.hpp"
+#include "../pathproc.hpp"
 #include <cmath>
+#include "libary.hpp"
 #include "native_proc.hpp"
 #include "asm.hpp"
 #include <unordered_map>
@@ -10,7 +12,22 @@
 struct Module {
     std::vector<Frame*> funcs;
     std::string name;
-
+	
+	HMODULE __module___;
+	bool is_dyn_lib;
+	
+	Module(std::vector<Frame*> funcs, std::string name) {
+		this->name = name;
+		this->funcs = funcs;
+		this->is_dyn_lib = false;
+	}
+	
+	Module(HMODULE mo, std::string name) {
+		this->name = name;
+		this->__module___ = mo;
+		this->is_dyn_lib = true;
+	}
+	
     bool is_exist(std::string fname) {
         for (auto i : funcs)
             if (i->func_name == fname)
@@ -19,6 +36,10 @@ struct Module {
     }
 
     Frame* load_func(std::string fname) {
+		if (is_dyn_lib) {
+			auto tmp = (BUILD_IN_PROC*) GetProcAddress(__module___, fname.c_str());
+			return new Frame(tmp, fname);
+		}
         for (auto i : funcs)
             if (i->func_name == fname)
                 return i;
@@ -29,7 +50,6 @@ struct Module {
 
 class VM {
 public:
-
     VM(std::string path, bool is_debug = false) : is_debug(is_debug) {
         this->frames = load_bytecode(path, builtins);
         heap_head = new OPL_BasicValue(BV_NULL);
@@ -845,10 +865,12 @@ public:
                 case OP_LOAD_MODULE: {
                     std::string path = ((OPL_String*)val_conv(get_current()->load_const(GET)))->str;
                     std::string name = ((OPL_String*)val_conv(get_current()->load_const(GET)))->str;
-                    Module* m = new Module;
-                    m->name = name;
-                    m->funcs = load_bytecode(path, builtins);
-                    modules.push_back(m);
+					if (!end_with(path, "dll")) {
+						modules.push_back(new Module(load_bytecode(path, builtins), name));
+					} else {
+						auto tmp = load_native_libary(path);
+						modules.push_back(new Module(tmp, name));
+					}
                     break;
                 }
 
@@ -963,14 +985,20 @@ private:
     OPL_BasicValue* heap_head;
     std::unordered_map<std::string, STACK_VALUE*> globals;
     friend struct Frame;
-
-    Frame* find_method_proc(std::string mod_name, std::string method_name) {
-        for (auto _i : modules)
-            if (_i->name == mod_name && _i->is_exist(method_name))
-                return _i->load_func(method_name);
-        std::cout << "module '" << mod_name << "' not found\n";
-        exit(-1);
-    }
+	
+	Frame* find_method_proc(std::string mod_name, std::string method_name) {
+		for (auto _i : modules) {
+			if (_i->name == mod_name) {
+				if (_i->is_dyn_lib) {
+					return _i->load_func(method_name);
+				} else if (_i->is_exist(method_name)) {
+					return _i->load_func(method_name);
+				}
+			}
+		}
+		std::cout << "Module '" << mod_name << "' not found or function missing\n";
+		exit(-1);
+	}
 
     OPL_BasicValue* val_conv(STACK_VALUE* value) {
         if (value->is_heap_ref) return value->obj;

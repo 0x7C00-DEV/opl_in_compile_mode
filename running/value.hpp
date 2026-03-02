@@ -223,9 +223,6 @@ struct OPL_Integer : public OPL_BasicValue {
     }
 };
 
-
-
-
 int get_int(STACK_VALUE* arg) {
     if (arg->is_heap_ref) {
         return ((OPL_Integer*) arg)->i;
