@@ -44,7 +44,7 @@ struct ObjectInfo {
 };
 
 struct CompileOutput {
-	std::vector<Frame*> funcs;
+	std::vector<OPL_VALUE::Frame*> funcs;
 	std::vector<VarInfo> globals;
 	
 	int add_global(VarInfo info) {
@@ -81,7 +81,7 @@ struct CompileOutput {
 		return -1;
 	}
 	
-	Frame* find_function(int id) {
+	OPL_VALUE::Frame* find_function(int id) {
 		for (auto i : funcs)
 			if (i->func_id == id)
 				return i;
@@ -90,7 +90,7 @@ struct CompileOutput {
 	
 	int get_cnt() { return ++fn_cnt; }
 	
-	int regist_function(Frame* func) {
+	int regist_function(OPL_VALUE::Frame* func) {
 		funcs.push_back(func);
 		return fn_cnt;
 	}
@@ -126,13 +126,13 @@ struct Scope {
 
 struct Tmp {
 	std::vector<Scope> scopes;
-	Chunk* current;
+	OPL_VALUE::Chunk* current;
 	std::vector<OperatorCommand> code_cache;
 	int addr_cnt = 0, id = -1, arg_size = 0;
 	std::string current_func_name;
 	
 	Tmp() {
-		current = new Chunk();
+		current = new OPL_VALUE::Chunk();
 		scopes.emplace_back();
 	}
 };
@@ -180,57 +180,57 @@ public:
 	ModuleManager* mg;
 	
 	void regist_native_proc() {
-		Frame* fprint = new Frame(&print, "print");
+		OPL_VALUE::Frame* fprint = new OPL_VALUE::Frame(&print, "print");
 		fprint->args_len = 1;
 		fprint->func_id = target->get_cnt();
 		target->regist_function(fprint);
 		
-		Frame* fprintln = new Frame(&println, "println");
+		OPL_VALUE::Frame* fprintln = new OPL_VALUE::Frame(&println, "println");
 		fprintln->args_len = 1;
 		fprintln->func_id = target->get_cnt();
 		target->regist_function(fprintln);
 		
-		Frame* finput = new Frame(&input, "input");
+		OPL_VALUE::Frame* finput = new OPL_VALUE::Frame(&input, "input");
 		finput->args_len = 1;
 		finput->func_id = target->get_cnt();
 		target->regist_function(finput);
 		
-		Frame* debug = new Frame(&get_id_info, "debug");
+		OPL_VALUE::Frame* debug = new OPL_VALUE::Frame(&get_id_info, "debug");
 		debug->args_len = 1;
 		debug->func_id = target->get_cnt();
 		target->regist_function(debug);
 		
-		Frame* _append = new Frame(&append, "append");
+		OPL_VALUE::Frame* _append = new OPL_VALUE::Frame(&append, "append");
 		_append->args_len = 2;
 		_append->func_id = target->get_cnt();
 		target->regist_function(_append);
 		
-		Frame* size = new Frame(&length, "size");
+		OPL_VALUE::Frame* size = new OPL_VALUE::Frame(&length, "size");
 		size->args_len = 1;
 		size->func_id = target->get_cnt();
 		target->regist_function(size);
 		
-		Frame* str2int_ = new Frame(&str2int, "str2int");
+		OPL_VALUE::Frame* str2int_ = new OPL_VALUE::Frame(&str2int, "str2int");
 		str2int_->args_len = 1;
 		str2int_->func_id = target->get_cnt();
 		target->regist_function(str2int_);
 		
-		Frame* notnul = new Frame(&not_null, "not_null");
+		OPL_VALUE::Frame* notnul = new OPL_VALUE::Frame(&not_null, "not_null");
 		notnul->args_len = 1;
 		notnul->func_id = target->get_cnt();
 		target->regist_function(notnul);
 		
-		Frame* loadfile = new Frame(&read_file, "read_file");
+		OPL_VALUE::Frame* loadfile = new OPL_VALUE::Frame(&read_file, "read_file");
 		loadfile->args_len = 1;
 		loadfile->func_id = target->get_cnt();
 		target->regist_function(loadfile);
 		
-		Frame* int2str_ = new Frame(&int2str, "int2str");
+		OPL_VALUE::Frame* int2str_ = new OPL_VALUE::Frame(&int2str, "int2str");
 		int2str_->args_len = 1;
 		int2str_->func_id = target->get_cnt();
 		target->regist_function(int2str_);
 		
-		Frame* popback = new Frame(&pop_back, "pop_back");
+		OPL_VALUE::Frame* popback = new OPL_VALUE::Frame(&pop_back, "pop_back");
 		popback->args_len = 1;
 		popback->func_id = target->get_cnt();
 		target->regist_function(popback);
@@ -271,7 +271,7 @@ private:
 		}
 	}
 	
-	inline int add_const(STACK_VALUE* value) { return code_tmp.current->add_const(value); }
+	inline int add_const(OPL_VALUE::STACK_VALUE* value) { return code_tmp.current->add_const(value); }
 	inline std::string make_addr() { return "L" + std::to_string(code_tmp.addr_cnt++); }
 	void emit(std::string addr, std::vector<OperatorCommandUnit> codes) {
 		code_tmp.code_cache.push_back(OperatorCommand(addr, codes));
@@ -279,7 +279,7 @@ private:
 	
 	int emit_function(bool is_lambda) {
 		full_back();
-		auto* f = new Frame(code_tmp.current);
+		auto* f = new OPL_VALUE::Frame(code_tmp.current);
 		f->is_lambda = is_lambda;
 		f->func_id = code_tmp.id;
 		f->func_name = code_tmp.current_func_name;
@@ -383,17 +383,17 @@ private:
 		switch (a->kind) {
 			case AST::A_FLO: {
 				double f = std::stod(((FloatNode*)a)->number);
-				emit(make_addr(), {OP_LOAD_CONST, add_const(STACK_VALUE::make_double(f))});
+				emit(make_addr(), {OP_LOAD_CONST, add_const(OPL_VALUE::STACK_VALUE::make_double(f))});
 				return;
 			}
 			case AST::A_INT: {
 				int i = std::stoi(((IntegerNode*)a)->number);
-				emit(make_addr(), {OP_LOAD_CONST, add_const(STACK_VALUE::make_int(i))});
+				emit(make_addr(), {OP_LOAD_CONST, add_const(OPL_VALUE::STACK_VALUE::make_int(i))});
 				return ;
 			}
 			case AST::A_STRING: {
 				std::string s = ((StringNode*)a)->str;
-				emit(make_addr(), {OP_LOAD_CONST, add_const(STACK_VALUE::make_str(s))});
+				emit(make_addr(), {OP_LOAD_CONST, add_const(OPL_VALUE::STACK_VALUE::make_str(s))});
 				return;
 			}
 			case AST::A_TRUE:  emit(make_addr(), {OP_LOAD_TRUE}); return;
@@ -501,7 +501,7 @@ private:
 			if (parent_type->__kind == TypeNode::TK_MODULE) {
 				for (auto arg : node->args) visit_value(arg);
 				visit_member_access(ma->parent);
-				emit(make_addr(), {OP_LOAD_MODULE_METHOD, add_const(STACK_VALUE::make_str(ma->member))});
+				emit(make_addr(), {OP_LOAD_MODULE_METHOD, add_const(OPL_VALUE::STACK_VALUE::make_str(ma->member))});
 				emit(make_addr(), {OP_SPECIAL_CALL});
 				return;
 			}
@@ -795,7 +795,7 @@ private:
 				emit(make_addr(), {OP_MEMBER_GET, obj_info.get_offset(ma->member)});
 				return var_info.type;
 			} else {
-				emit(make_addr(), {OP_LOAD_MODULE_METHOD, add_const(STACK_VALUE::make_str(ma->member))});
+				emit(make_addr(), {OP_LOAD_MODULE_METHOD, add_const(OPL_VALUE::STACK_VALUE::make_str(ma->member))});
 				TypeNode *tn = new TypeNode("func");
 				tn->__kind = TypeNode::TK_FUNCTION;
 				return tn;
@@ -803,7 +803,7 @@ private:
 		} else if (node->kind == AST::A_ID) {
 			if (mg->exist(((IdNode*)node)->id)) {
 				std::string name = ((IdNode*)node)->id;
-				emit(make_addr(), {OP_LOAD_CONST, add_const(STACK_VALUE::make_str(name))});
+				emit(make_addr(), {OP_LOAD_CONST, add_const(OPL_VALUE::STACK_VALUE::make_str(name))});
 				return new TypeNode(mg->get_path(name), name);
 			}
 			load_name(((IdNode*)node)->id);
@@ -932,7 +932,7 @@ private:
 	void visit_func_node(FunctionNode* node) {
 		code_tmp.code_cache.clear();
 		create_scope();
-		code_tmp.current = new Chunk;
+		code_tmp.current = new OPL_VALUE::Chunk;
 		code_tmp.id = target->get_cnt();
 		code_tmp.current_func_name = node->name;
 		bool is_constructor = (node->name.find("$constructor") != std::string::npos);
@@ -955,8 +955,8 @@ private:
 			for (auto i : mg->modules) {
 				emit(
 					make_addr(), {OP_LOAD_MODULE,
-					              add_const(STACK_VALUE::make_str(i.second.path)),
-					              add_const(STACK_VALUE::make_str(i.first))}
+					              add_const(OPL_VALUE::STACK_VALUE::make_str(i.second.path)),
+					              add_const(OPL_VALUE::STACK_VALUE::make_str(i.first))}
 				);
 			}
 		}

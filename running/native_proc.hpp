@@ -2,38 +2,39 @@
 #define COPL_NATIVE_PROC_H
 #include "value.hpp"
 #include "fstream"
+#include "val_conv.hpp"
 #define VM_NUL STACK_VALUE::make_null();
 
-std::string get_string(OPL_BasicValue* tmp) {
+std::string get_string(OPL_VALUE::OPL_BasicValue* tmp) {
     std::string res;
     switch (tmp->kind) {
-    case BV_INT:
-        res = std::to_string(((OPL_Integer*)tmp)->i);
+    case OPL_VALUE::BV_INT:
+        res = std::to_string(((OPL_VALUE::OPL_Integer*)tmp)->i);
         break;
-    case BV_FLOAT:
-        res = std::to_string(((OPL_Float*)tmp)->f);
+    case OPL_VALUE::BV_FLOAT:
+        res = std::to_string(((OPL_VALUE::OPL_Float*)tmp)->f);
         break;
-    case BV_STRING:
-        res = ((OPL_String*)tmp)->str;
+    case OPL_VALUE::BV_STRING:
+        res = ((OPL_VALUE::OPL_String*)tmp)->str;
         break;
-    case BV_BOOL:
-        res = (((OPL_Bool*)tmp)->b) ? "true" : "false";
+    case OPL_VALUE::BV_BOOL:
+        res = (((OPL_VALUE::OPL_Bool*)tmp)->b) ? "true" : "false";
         break;
-    case BV_ARRAY:
+    case OPL_VALUE::BV_ARRAY:
         res += "[";
-        for (auto i : ((OPL_Array*)tmp)->elements)
+        for (auto i : ((OPL_VALUE::OPL_Array*)tmp)->elements)
             res += get_string(i) + ", ";
         res += "]";
         break;
-    case BV_OBJ:
+    case OPL_VALUE::BV_OBJ:
         res = "<object>";
         break;
-    case BV_NULL:
+    case OPL_VALUE::BV_NULL:
         res = "null";
         break;
-    case BV_RAW_POINT: {
+    case OPL_VALUE::BV_RAW_POINT: {
         char buf[32];
-        sprintf(buf, "%p", ((OPL_Point*)tmp)->pointer);
+        sprintf(buf, "%p", ((OPL_VALUE::OPL_Point*)tmp)->pointer);
         res = "<pointer: ";
         res += buf;
         res += ">";
@@ -44,31 +45,31 @@ std::string get_string(OPL_BasicValue* tmp) {
 }
 
 
-std::string get_string(STACK_VALUE* arg) {
+std::string get_string(OPL_VALUE::STACK_VALUE* arg) {
     if (arg->is_heap_ref) {
         return get_string(arg->obj);
     } else {
         std::string res;
         switch (arg->kind) {
-        case STACK_VALUE::S_INT:
+        case OPL_VALUE::STACK_VALUE::S_INT:
             res = std::to_string(arg->i_val);
             break;
-        case STACK_VALUE::S_BOOL:
+        case OPL_VALUE::STACK_VALUE::S_BOOL:
             res = (arg->b_val)? "true" : "false";
             break;
-        case STACK_VALUE::S_DOUBLE:
+        case OPL_VALUE::STACK_VALUE::S_DOUBLE:
             res = std::to_string(arg->d_val);
             break;
-        case STACK_VALUE::S_RAW:
+        case OPL_VALUE::STACK_VALUE::S_RAW:
             res = "VOID";
             break;
-        case STACK_VALUE::S_NULL:
+        case OPL_VALUE::STACK_VALUE::S_NULL:
             res = "null";
             break;
-        case STACK_VALUE::S_STR:
+        case OPL_VALUE::STACK_VALUE::S_STR:
             res = arg->str_value;
             break;
-        case STACK_VALUE::S_FUC:
+        case OPL_VALUE::STACK_VALUE::S_FUC:
             throw std::exception();
             break;
         }
@@ -76,18 +77,18 @@ std::string get_string(STACK_VALUE* arg) {
     }
 }
 
-STACK_VALUE* print(std::vector<STACK_VALUE*> args) {
+OPL_VALUE::STACK_VALUE* print(std::vector<OPL_VALUE::STACK_VALUE*> args) {
     for (auto i : args) printf("%s", get_string(i).c_str());
-    return VM_NUL;
+    return OPL_VALUE::VM_NUL;
 }
 
-STACK_VALUE* println(std::vector<STACK_VALUE*> args) {
+OPL_VALUE::STACK_VALUE* println(std::vector<OPL_VALUE::STACK_VALUE*> args) {
     print(args);
     printf("\n");
-    return VM_NUL;
+    return OPL_VALUE::VM_NUL;
 }
 
-STACK_VALUE* get_id_info(std::vector<STACK_VALUE*> args) {
+OPL_VALUE::STACK_VALUE* get_id_info(std::vector<OPL_VALUE::STACK_VALUE*> args) {
     auto t = args[0];
     printf("- the info of args[0]:\n");
     printf("- type: %d\n", args[0]->kind);
@@ -97,146 +98,111 @@ STACK_VALUE* get_id_info(std::vector<STACK_VALUE*> args) {
         if (args[0]->obj) printf("    - RefType: %d\n", args[0]->obj->kind);
         else printf(" - RefTarget is a null pointer\n");
     }
-    return VM_NUL;
+    return OPL_VALUE::VM_NUL;
 }
 
-OPL_BasicValue* val_conv(STACK_VALUE* value) {
-	if (value->is_heap_ref) return value->obj;
-	OPL_BasicValue* new_obj = nullptr;
-	switch (value->kind) {
-		case STACK_VALUE::S_INT:
-			new_obj = new OPL_Integer(value->i_val);
-			break;
-		case STACK_VALUE::S_BOOL:
-			new_obj = new OPL_Bool(value->b_val);
-			break;
-		case STACK_VALUE::S_DOUBLE:
-			new_obj = new OPL_Float(value->d_val);
-			break;
-		case STACK_VALUE::S_RAW:
-			new_obj = new OPL_Point(value->raw_ptr);
-			break;
-		case STACK_VALUE::S_NULL:
-			new_obj = new OPL_Null;
-			break;
-		case STACK_VALUE::S_STR:
-			new_obj = new OPL_String(value->str_value);
-			break;
-		case STACK_VALUE::S_FUC:
-			new_obj = new OPL_Point(value->raw_ptr);
-			break;
-		default:
-			return nullptr;
-	}
-	new_obj->next = nullptr;
-	return new_obj;
-}
 
-inline std::string get_integer(STACK_VALUE* arg)  {
-	return std::to_string(((OPL_Integer*)val_conv(arg))->i);
-}
-
-STACK_VALUE* input(std::vector<STACK_VALUE*> args) {
+OPL_VALUE::STACK_VALUE* input(std::vector<OPL_VALUE::STACK_VALUE*> args) {
     print(args);
     std::string res;
     std::getline(std::cin, res);
-    return STACK_VALUE::make_str(res);
+    return OPL_VALUE::STACK_VALUE::make_str(res);
 }
 
-STACK_VALUE* read_file(std::vector<STACK_VALUE*> args) {
+OPL_VALUE::STACK_VALUE* read_file(std::vector<OPL_VALUE::STACK_VALUE*> args) {
     std::ifstream ifs(get_string(args[0]));
     std::string buffer, res;
     while (std::getline(ifs, buffer))
         res += buffer + '\n';
-    return STACK_VALUE::make_str(res);
+    return OPL_VALUE::STACK_VALUE::make_str(res);
 }
 
-STACK_VALUE* str2int(std::vector<STACK_VALUE*> args) {
+OPL_VALUE::STACK_VALUE* str2int(std::vector<OPL_VALUE::STACK_VALUE*> args) {
     std::string tmp = get_string(args[0]);
-    return STACK_VALUE::make_int(std::stoi(tmp));
+    return OPL_VALUE::STACK_VALUE::make_int(std::stoi(tmp));
 }
 
-STACK_VALUE* int2str(std::vector<STACK_VALUE*> args) {
-    return STACK_VALUE::make_str(get_integer(args[0]));
+OPL_VALUE::STACK_VALUE* int2str(std::vector<OPL_VALUE::STACK_VALUE*> args) {
+    return OPL_VALUE::STACK_VALUE::make_str(get_integer(args[0]));
 }
 
-STACK_VALUE* append(std::vector<STACK_VALUE*> args) {
+OPL_VALUE::STACK_VALUE* append(std::vector<OPL_VALUE::STACK_VALUE*> args) {
     auto target = args[1];
     auto value = args[0];
     if (!target->is_heap_ref) {
-        if (target->kind != STACK_VALUE::S_STR) {
+        if (target->kind != OPL_VALUE::STACK_VALUE::S_STR) {
             std::cout << "is not a heap ref\n";
             exit(-1);
         } else {
             target->str_value += get_string(val_conv(value));
-            return VM_NUL;
+            return OPL_VALUE::VM_NUL;
         }
     }
-    if (target->obj->kind == BV_ARRAY) {
-        ((OPL_Array*) target->obj)->elements.push_back(val_conv(value));
-    } else if (target->obj->kind == BV_STRING) {
-        ((OPL_String*) target)->str += get_string(val_conv(value));
+    if (target->obj->kind == OPL_VALUE::BV_ARRAY) {
+        ((OPL_VALUE::OPL_Array*) target->obj)->elements.push_back(val_conv(value));
+    } else if (target->obj->kind == OPL_VALUE::BV_STRING) {
+        ((OPL_VALUE::OPL_String*) target)->str += get_string(val_conv(value));
     } else {
         printf("unknown type %d\n", target->obj->kind);
         exit(-1);
     }
-    return VM_NUL;
+    return OPL_VALUE::VM_NUL;
 }
 
-STACK_VALUE* pop_back(std::vector<STACK_VALUE*> args) {
+OPL_VALUE::STACK_VALUE* pop_back(std::vector<OPL_VALUE::STACK_VALUE*> args) {
 	auto tmp = args[0];
 	if (tmp->is_heap_ref && tmp->obj) {
-		if (tmp->obj->kind == BV_ARRAY) {
-			((OPL_Array*)tmp->obj)->elements.pop_back();
-		} else if (tmp->obj->kind == BV_STRING) {
-			((OPL_String*)tmp->obj)->str.pop_back();
+		if (tmp->obj->kind == OPL_VALUE::BV_ARRAY) {
+			((OPL_VALUE::OPL_Array*)tmp->obj)->elements.pop_back();
+		} else if (tmp->obj->kind == OPL_VALUE::BV_STRING) {
+			((OPL_VALUE::OPL_String*)tmp->obj)->str.pop_back();
 		} else {
 			printf("Error: want a string or array\n");
 			exit(-1);
 		}
 	} else {
-		if (tmp->kind != STACK_VALUE::S_STR) {
+		if (tmp->kind != OPL_VALUE::STACK_VALUE::S_STR) {
 			printf("Error: want a string\n");
 			exit(-1);
 		}
 		tmp->str_value.pop_back();
 	}
-    return VM_NUL;
+    return OPL_VALUE::VM_NUL;
 }
 
-STACK_VALUE* not_null(std::vector<STACK_VALUE*> args) {
-    STACK_VALUE* v = args[0];
+OPL_VALUE::STACK_VALUE* not_null(std::vector<OPL_VALUE::STACK_VALUE*> args) {
+	OPL_VALUE::STACK_VALUE* v = args[0];
     bool is_null;
     if (v->is_heap_ref) {
-        is_null = (v->obj == nullptr || v->obj->kind == BV_NULL);
+        is_null = (v->obj == nullptr || v->obj->kind == OPL_VALUE::BV_NULL);
     } else {
-        is_null = (v->kind == STACK_VALUE::S_NULL);
+        is_null = (v->kind == OPL_VALUE::STACK_VALUE::S_NULL);
     }
-    return STACK_VALUE::make_bool(!is_null);
+    return OPL_VALUE::STACK_VALUE::make_bool(!is_null);
 }
 
-STACK_VALUE* length(std::vector<STACK_VALUE*> args) {
+OPL_VALUE::STACK_VALUE* length(std::vector<OPL_VALUE::STACK_VALUE*> args) {
     auto _this = args[0];
     if (_this->is_heap_ref) {
-        if (_this->obj && _this->obj->kind == BV_STRING)
-            return STACK_VALUE::make_int(((OPL_String*)_this->obj)->str.size());
-        else if (_this->obj && _this->obj->kind == BV_ARRAY)
-            return STACK_VALUE::make_int(((OPL_Array*)_this->obj)->elements.size());
+        if (_this->obj && _this->obj->kind == OPL_VALUE::BV_STRING)
+            return OPL_VALUE::STACK_VALUE::make_int(((OPL_VALUE::OPL_String*)_this->obj)->str.size());
+        else if (_this->obj && _this->obj->kind == OPL_VALUE::BV_ARRAY)
+            return OPL_VALUE::STACK_VALUE::make_int(((OPL_VALUE::OPL_Array*)_this->obj)->elements.size());
         else {
             printf("Warning: length() called on non-string/array heap object, returning 0\n");
-            return STACK_VALUE::make_int(0);
+            return OPL_VALUE::STACK_VALUE::make_int(0);
         }
     } else {
-        if (_this->kind == STACK_VALUE::S_STR)
-            return STACK_VALUE::make_int(_this->str_value.size());
+        if (_this->kind == OPL_VALUE::STACK_VALUE::S_STR)
+            return OPL_VALUE::STACK_VALUE::make_int(_this->str_value.size());
         else {
             printf("Warning: length() called on non-string stack value, returning 0\n");
-            return STACK_VALUE::make_int(0);
+            return OPL_VALUE::STACK_VALUE::make_int(0);
         }
     }
 }
 
-const std::unordered_map<std::string, BUILD_IN_PROC*> builtins = {
+const std::unordered_map<std::string, OPL_VALUE::BUILD_IN_PROC*> builtins = {
     {"print", print},
     {"println", println},
     {"input", input},

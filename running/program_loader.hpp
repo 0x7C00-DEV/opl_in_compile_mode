@@ -9,8 +9,8 @@
 #include <unordered_map>
 #include <cstdio>
 
-std::vector<Frame*> load_bytecode(const std::string& filename,
-                                   const std::unordered_map<std::string, BUILD_IN_PROC*>& builtins) {
+std::vector<OPL_VALUE::Frame*> load_bytecode(const std::string& filename,
+                                   const std::unordered_map<std::string, OPL_VALUE::BUILD_IN_PROC*>& builtins) {
     FILE* file = fopen(filename.c_str(), "rb");
     if (!file) {
         printf("Cannot open bytecode file: %s\n", filename.c_str());
@@ -28,7 +28,7 @@ std::vector<Frame*> load_bytecode(const std::string& filename,
     uint32_t func_cnt;
     fread(&func_cnt, sizeof(func_cnt), 1, file);
 
-    std::vector<Frame*> frames;
+    std::vector<OPL_VALUE::Frame*> frames;
     frames.reserve(func_cnt);
 
     for (uint32_t t_i = 0; t_i < func_cnt; ++t_i) {
@@ -81,24 +81,24 @@ std::vector<Frame*> load_bytecode(const std::string& filename,
 
         uint32_t const_count;
         fread(&const_count, sizeof(const_count), 1, file);
-        std::vector<STACK_VALUE*> const_pool;
+        std::vector<OPL_VALUE::STACK_VALUE*> const_pool;
         if (!is_builtin && const_count > 0) {
             const_pool.resize(const_count);
             for (uint32_t j = 0; j < const_count; ++j) {
                 uint8_t type;
                 fread(&type, 1, 1, file);
-                STACK_VALUE* val = nullptr;
+	            OPL_VALUE::STACK_VALUE* val = nullptr;
                 switch (type) {
                     case BINT: {
                         int32_t i;
                         fread(&i, sizeof(i), 1, file);
-                        val = STACK_VALUE::make_int(i);
+                        val = OPL_VALUE::STACK_VALUE::make_int(i);
                         break;
                     }
                     case BFLOAT: {
                         double d;
                         fread(&d, sizeof(d), 1, file);
-                        val = STACK_VALUE::make_double(d);
+                        val = OPL_VALUE::STACK_VALUE::make_double(d);
                         break;
                     }
                     case BSTRING: {
@@ -106,18 +106,18 @@ std::vector<Frame*> load_bytecode(const std::string& filename,
                         fread(&len, sizeof(len), 1, file);
                         std::string s(len, '\0');
                         fread(&s[0], 1, len, file);
-                        val = STACK_VALUE::make_str(s);
+                        val = OPL_VALUE::STACK_VALUE::make_str(s);
                         break;
                     }
                     case BBOOL: {
                         uint8_t b;
                         fread(&b, 1, 1, file);
-                        val = STACK_VALUE::make_bool(b != 0);
+                        val = OPL_VALUE::STACK_VALUE::make_bool(b != 0);
                         break;
                     }
                     case BNULL:
                     default:
-                        val = STACK_VALUE::make_null();
+                        val = OPL_VALUE::STACK_VALUE::make_null();
                         break;
                 }
                 const_pool[j] = val;
@@ -141,18 +141,18 @@ std::vector<Frame*> load_bytecode(const std::string& filename,
                 }
             }
         }
-
-        Frame* frame = nullptr;
+	    
+	    OPL_VALUE::Frame* frame = nullptr;
         if (is_builtin) {
-            frame = new Frame(it->second, func_name);
+            frame = new OPL_VALUE::Frame(it->second, func_name);
             frame->func_id = func_id;
             frame->args_len = args_len;
         } else {
-            Chunk* chunk = new Chunk;
+	        OPL_VALUE::Chunk* chunk = new OPL_VALUE::Chunk;
             chunk->op_codes = std::move(op_codes);
             chunk->names = std::move(names);
             chunk->const_pool = std::move(const_pool);
-            frame = new Frame(chunk);
+            frame = new OPL_VALUE::Frame(chunk);
             frame->func_name = func_name;
             frame->func_id = func_id;
             frame->args_len = args_len;
