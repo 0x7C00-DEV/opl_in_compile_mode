@@ -1,0 +1,6 @@
+import "test.copl" as test;
+
+def hello() {
+	print("121212");
+	test.hello_();
+}

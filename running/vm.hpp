@@ -53,8 +53,9 @@ public:
     VM(std::string path, bool is_debug = false) : is_debug(is_debug) {
         this->frames = load_bytecode(path, builtins);
         heap_head = new OPL_VALUE::OPL_BasicValue(OPL_VALUE::BV_NULL);
-        calls.push_back(find_function_by_name("main"));
-        execute();
+        calls.push_back(find_function_by_name("main", "at file init"));
+	    calls.push_back(find_function_by_name("#init__", "at file init"));
+	    execute();
     }
 	
 	VM(OPL_VALUE::Frame* f, VM* vm, bool is_debug) {
@@ -68,13 +69,15 @@ public:
 			if (l->name != name)
 				modules.push_back(l);
 		calls.push_back(f);
+		calls.push_back(find_function_by_name("#init__", "at module init"));
 		execute();
 	}
 
     VM(std::vector<OPL_VALUE::Frame*> frames, bool is_debug = false) : is_debug(is_debug) {
         this->frames = frames;
         heap_head = new OPL_VALUE::OPL_BasicValue(OPL_VALUE::BV_NULL);
-        calls.push_back(find_function_by_name("main"));
+        calls.push_back(find_function_by_name("main", "at program init"));
+		calls.push_back(find_function_by_name("#init__", "at program init"));
         execute();
     }
 
@@ -1049,7 +1052,7 @@ private:
     }
 
     void create_task_by_name(std::string id) {
-	    OPL_VALUE::Frame* callee = find_function_by_name(id)->clone();
+	    OPL_VALUE::Frame* callee = find_function_by_name(id, " at sub proc caller, create task ny name")->clone();
 	    OPL_VALUE::Frame* caller = get_current();
         callee->caller = caller;
         if (!callee->is_build_in) callee->pc = callee->get_start();
@@ -1141,11 +1144,12 @@ private:
         return value;
     }
 	
-	OPL_VALUE::Frame* find_function_by_name(std::string name) {
-        for (auto ti : frames)
-            if (ti->func_name == name)
-                return ti;
-        printf("Function '%s' not found\n", name.c_str());
+	OPL_VALUE::Frame* find_function_by_name(std::string name, std::string info) {
+        for (auto ti : frames) {
+	        if (ti->func_name == name)
+		        return ti;
+        }
+        printf("Function '%s' not found, %s\n", name.c_str(), info.c_str());
         exit(-1);
     }
 	

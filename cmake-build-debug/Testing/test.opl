@@ -1,0 +1,3 @@
+def hello_() {
+	println("hello, world");
+}

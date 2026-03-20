@@ -247,6 +247,7 @@ public:
 				visit_all(i, "", "");
 			}
 		}
+		create_init_function();
 	}
 	
 	std::vector<AST*> t_codes;
@@ -929,6 +930,27 @@ private:
 		}
 	}
 	
+	void create_init_function() {
+		code_tmp.code_cache.clear();
+		create_scope();
+		code_tmp.current = new OPL_VALUE::Chunk;
+		code_tmp.id = target->get_cnt();
+		code_tmp.current_func_name = "#init__";
+		
+		for (auto i : mg->modules) {
+			emit(
+				make_addr(), {OP_LOAD_MODULE,
+							  add_const(OPL_VALUE::STACK_VALUE::make_str(i.second.path)),
+							  add_const(OPL_VALUE::STACK_VALUE::make_str(i.first))}
+							  );
+		}
+		
+		code_tmp.arg_size = 0;
+		emit(make_addr(), {OP_LEAVE});
+		emit_function(false);
+		leave_scope();
+	}
+	
 	void visit_func_node(FunctionNode* node) {
 		code_tmp.code_cache.clear();
 		create_scope();
@@ -949,16 +971,6 @@ private:
 			int id = code_tmp.current->add_name(vd->name);
 			add_var(vd->name, id, vd->type);
 			emit(make_addr(), {OP_SET_NAME, id});
-		}
-		
-		if (code_tmp.current_func_name == "main") {
-			for (auto i : mg->modules) {
-				emit(
-					make_addr(), {OP_LOAD_MODULE,
-					              add_const(OPL_VALUE::STACK_VALUE::make_str(i.second.path)),
-					              add_const(OPL_VALUE::STACK_VALUE::make_str(i.first))}
-				);
-			}
 		}
 		
 		code_tmp.arg_size = node->args.size() + (is_constructor || is_method ? 1 : 0);
