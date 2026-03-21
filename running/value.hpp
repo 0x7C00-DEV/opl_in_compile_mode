@@ -11,9 +11,7 @@
 
 namespace OPL_VALUE {
 	
-	enum BV_Kind {
-		BV_INT, BV_FLOAT, BV_STRING, BV_BOOL, BV_ARRAY, BV_OBJ, BV_NULL, BV_RAW_POINT
-	};
+	enum BV_Kind { BV_INT, BV_FLOAT, BV_STRING, BV_BOOL, BV_ARRAY, BV_OBJ, BV_NULL, BV_RAW_POINT };
 	
 	struct OPL_BasicValue {
 		OPL_BasicValue *next;
@@ -68,14 +66,10 @@ namespace OPL_VALUE {
 	
 	struct STACK_VALUE {
 		bool is_heap_ref;
-		enum ValueType {
-			S_INT, S_BOOL, S_DOUBLE, S_RAW, S_NULL, S_STR, S_FUC
-		} kind;
+		enum ValueType { S_INT, S_BOOL, S_DOUBLE, S_RAW, S_NULL, S_STR, S_FUC } kind;
 		
 		STACK_VALUE *copy() {
-			if (is_heap_ref) {
-				return make_heap(obj->__copy__());
-			}
+			if (is_heap_ref) return make_heap(obj->__copy__());
 			switch (kind) {
 				case S_INT:
 					return make_int(i_val);

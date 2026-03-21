@@ -61,7 +61,7 @@ void file() {
     CompileOutput opt;
 	ModuleManager* mg = new ModuleManager;
     Compiler compiler(&opt, parser.ast, mg);
-    VM vm(opt.funcs);
+    VM vm(opt.funcs, "main");
 }
 
 void compile(std::string __in__, std::string __out__) {

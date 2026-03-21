@@ -1,6 +1,5 @@
-import "test.copl" as test;
+import "tmp_mod.copl" as tmp;
 
 def hello() {
-	print("121212");
-	test.hello_();
+	tmp.tmp_hello();
 }
