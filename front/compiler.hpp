@@ -539,6 +539,11 @@ private:
 			visit_element_get_node((ElementGetNode*)func);
 			emit(make_addr(), {OP_SPECIAL_CALL});
 		}
+		else if (func->kind == AST::A_CALL) {
+			for (auto arg : node->args) visit_value(arg);
+			visit_call_node((CallNode*)func);
+			emit(make_addr(), {OP_SPECIAL_CALL});
+		}
 		else {
 			throw std::exception();
 		}

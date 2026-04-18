@@ -61,6 +61,10 @@ void file() {
     CompileOutput opt;
 	ModuleManager* mg = new ModuleManager;
     Compiler compiler(&opt, parser.ast, mg);
+    for (auto i : opt.funcs)
+        if (!i->is_build_in)
+            OPL_VALUE::disassemble_chunk(i->codes, i->func_name.c_str());
+    printf("RunResult:\n");
     VM vm(opt.funcs, "main");
 }
 
