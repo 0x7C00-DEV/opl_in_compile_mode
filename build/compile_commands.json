@@ -1,0 +1,8 @@
+[
+{
+  "directory": "C:/Users/Lenovo/Desktop/opl_in_compile_mode/build",
+  "command": "F:\\develop\\Mingw-14.2.0\\mingw64\\bin\\g++.exe   -g -o CMakeFiles\\COPL.dir\\main.cpp.obj -c C:\\Users\\Lenovo\\Desktop\\opl_in_compile_mode\\main.cpp",
+  "file": "C:/Users/Lenovo/Desktop/opl_in_compile_mode/main.cpp",
+  "output": "CMakeFiles/COPL.dir/main.cpp.obj"
+}
+]

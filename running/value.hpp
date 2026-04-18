@@ -452,7 +452,11 @@ namespace OPL_VALUE {
 		
 		inline void set_name(int id, STACK_VALUE *value) { names[codes->names[id]] = value; }
 		
-		inline STACK_VALUE *load_name(int id) { return names[codes->names[id]]; }
+		inline STACK_VALUE *load_name(int id) { 
+			std::string t = codes->names[id];
+			if (names.find(t) != names.end()) return names[t];
+			return nullptr; 
+		}
 		
 		inline void store_name(int id, STACK_VALUE *value) { names[codes->names[id]] = value; }
 		

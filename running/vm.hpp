@@ -85,6 +85,7 @@ public:
 	
 	VM(std::vector<OPL_VALUE::Frame*> frames, bool is_debug = false, bool run_init_only = false) : is_debug(is_debug) {
 		this->frames = frames;
+		this->is_debug = is_debug;
 		heap_head = new OPL_VALUE::OPL_BasicValue(OPL_VALUE::BV_NULL);
 		if (!run_init_only) {
 			calls.push_back(find_function_by_name("main", "at program init"));
@@ -110,8 +111,7 @@ public:
 	bool is_debug = false;
 	
 	void debug() {
-		if (is_debug)
-			printf("CurrentOperator = %d, StackSize = %zu\n", i, (!calls.empty())? get_current()->stack.size() : 0);
+
 	}
 	
 	bool execute() {
@@ -152,13 +152,26 @@ public:
 				
 				case OP_LOAD_NAME: {
 					int id = GET;
-					get_current()->push(get_current()->load_name(id));
+					if (id == -1) {
+						printf("At loadName: invalid id(-1)\n");
+						exit(-1);
+					}
+					auto res = get_current()->load_name(id);
+					if (res) get_current()->push(res);
+					else {
+						printf("Error[id %d] not found\n", id);
+						exit(-1);
+					}
 					debug();
 					break;
 				}
 				
 				case OP_SET_NAME: {
 					int id = GET;
+					if (id == -1) {
+						printf("At setName: invalid id(-1)");
+						exit(-1);
+					}
 					get_current()->set_name(id, get_current()->pop());
 					debug();
 					break;

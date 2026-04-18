@@ -56,6 +56,9 @@ struct CompileOutput {
 		for (auto i : globals)
 			if (i.name == name)
 				return i.type;
+		for (auto i : funcs)
+			if (i->func_name == name)
+				return new TypeNode("lambda");
 		throw std::exception();
 	}
 	
@@ -289,6 +292,7 @@ private:
 	}
 	
 	inline void create_scope() { code_tmp.scopes.emplace_back(); }
+
 	inline void leave_scope() { if (!code_tmp.scopes.empty()) code_tmp.scopes.pop_back(); }
 	
 	VarInfo get_var(std::string name) {
@@ -325,7 +329,18 @@ private:
 	}
 	
 	void load_name(std::string name) {
-		emit(make_addr(), {OP_LOAD_NAME, get_name_id(name)});
+		int func_id = target->find_function_by_name(name);
+		if (func_id != -1) {
+			emit(make_addr(), {OP_LOAD_FUNC_ADDR, func_id});
+			return;
+		}
+		int id = get_name_id(name);
+		if (id != -1) {
+			emit(make_addr(), {OP_LOAD_NAME, id});
+			return;
+		}
+		printf("Name '%s' not found\n", name.c_str());
+		exit(-1);
 	}
 	
 	void set_name(std::string name) {
@@ -952,11 +967,13 @@ private:
 	}
 	
 	void visit_func_node(FunctionNode* node) {
+
 		code_tmp.code_cache.clear();
 		create_scope();
 		code_tmp.current = new OPL_VALUE::Chunk;
 		code_tmp.id = target->get_cnt();
 		code_tmp.current_func_name = node->name;
+		add_var(node->name, code_tmp.id, node->tp);
 		bool is_constructor = (node->name.find("$constructor") != std::string::npos);
 		bool is_method = (!current_class.empty() && !is_constructor);
 		

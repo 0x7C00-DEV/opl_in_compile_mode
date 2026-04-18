@@ -170,8 +170,10 @@ private:
         std::string name = expect_get(Token::TT_ID);
         std::vector<AST*> vals = make_area("(", ")", ",", &Parser::make_var_define);
         int w = 0;
+        expect_data("->", get_pos());
+        auto tp = make_type();
         auto body = make_block();
-        return new FunctionNode(name, vals, body);
+        return new FunctionNode(name, vals, body, tp);
     }
 
     TypeNode* make_type() {

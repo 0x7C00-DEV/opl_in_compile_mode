@@ -55,7 +55,7 @@ int release(int argc, char** argv) {
 }
 
 void file() {
-    std::string data = read_file("D:\\CLionProjects\\COPL\\test\\main");
+    std::string data = read_file("C:\\Users\\Lenovo\\Desktop\\opl_in_compile_mode\\test\\main.opl");
     Lexer lexer(data);
     Parser parser(lexer.tokens);
     CompileOutput opt;
@@ -78,5 +78,6 @@ void compile(std::string __in__, std::string __out__) {
 }
 
 int main(int argc, char **argv) {
-	return release(argc, argv);
+    file();
+	return 0;
 }

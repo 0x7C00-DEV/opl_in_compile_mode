@@ -291,10 +291,12 @@ public:
     Block* body;
     std::string name;
     std::vector<AST*> args;
-    FunctionNode(std::string name, std::vector<AST*> args, Block* body) : AST(A_FUNC_DEFINE) {
+    TypeNode* tp;
+    FunctionNode(std::string name, std::vector<AST*> args, Block* body, TypeNode* tp) : AST(A_FUNC_DEFINE) {
         this->body = body;
         this->name = name;
         this->args = args;
+        this->tp = tp;
     }
 
     ~FunctionNode() {
